@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_item_currency"
+        android:icon="@drawable/usd"
+        android:title="@string/usd"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/menu_item_currency_usd"
+                android:title="@string/usd"/>
+            <item
+                android:id="@+id/menu_item_currency_eur"
+                android:title="@string/eur"/>
+            <item
+                android:id="@+id/menu_item_currency_gbp"
+                android:title="@string/gbp"/>
+            <item
+                android:id="@+id/menu_item_currency_pln"
+                android:title="@string/pln"/>
+            <item
+                android:id="@+id/menu_item_currency_rub"
+                android:title="@string/rub"/>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_item_currancy_calc"
+        android:icon="@drawable/calculator"
+        android:title="@string/currency_calc"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_item_update_data"
+        android:icon="@drawable/ic_action_refresh_data"
+        android:title="@string/menu_item_refresh_data"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_item_data_sort"
+        android:icon="@drawable/ic_sort_by_alpha"
+        android:title="@string/sort"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_item_help"
+        android:title="@string/help"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/menu_item_about_app"
+        android:title="@string/about"
+        app:showAsAction="never"/>
+</menu>
