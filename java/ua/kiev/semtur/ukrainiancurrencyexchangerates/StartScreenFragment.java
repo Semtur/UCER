@@ -1,6 +1,5 @@
 package ua.kiev.semtur.ukrainiancurrencyexchangerates;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -15,15 +14,15 @@ import android.widget.TextView;
  */
 
 public class StartScreenFragment extends Fragment {
-    private static final String ARG_DATA_DOWNLOAD_STATE = "Data_downloading_state";
+    private static final String ARG_DATA_DOWNLOADING_STATE = "Data_downloading_state";
     private ProgressBar mProgressBar;
     private TextView mViewStartText;
     private Button mButtonRepeat;
 
-    public static Fragment newInstance(boolean doesDataDownload) {
+    public static Fragment newInstance(boolean isDataDownloading) {
         Fragment fragment = new StartScreenFragment();
         Bundle args = new Bundle();
-        args.putBoolean(ARG_DATA_DOWNLOAD_STATE, doesDataDownload);
+        args.putBoolean(ARG_DATA_DOWNLOADING_STATE, isDataDownloading);
         fragment.setArguments(args);
         return fragment;
     }
@@ -41,8 +40,8 @@ public class StartScreenFragment extends Fragment {
                mainActivity.updateCERData();
             }
         });
-        boolean doesDataDownload = getArguments().getBoolean(ARG_DATA_DOWNLOAD_STATE);
-        if (!doesDataDownload) {
+        boolean isDataDownloading = getArguments().getBoolean(ARG_DATA_DOWNLOADING_STATE);
+        if (!isDataDownloading) {
             mProgressBar.setVisibility(View.INVISIBLE);
             mViewStartText.setText(R.string.network_issues);
             mButtonRepeat.setVisibility(View.VISIBLE);

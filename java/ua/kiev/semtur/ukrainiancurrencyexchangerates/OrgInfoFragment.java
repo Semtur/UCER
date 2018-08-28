@@ -73,8 +73,13 @@ public class OrgInfoFragment extends Fragment implements View.OnClickListener {
         }
         mImageViewOrgLogo.setImageBitmap(bitmap);
 
+        String address = mOrganization.getAddress();
+        if (address == null || address.equals("")) {
+            mButtonShowOnTheMap.setVisibility(View.INVISIBLE);
+        }
+
         mTextViewOrgName.setText(mOrganization.getName());
-        mTextViewOrgAddress.setText(mOrganization.getAddress());
+        mTextViewOrgAddress.setText(address);
         mTextViewOrgPhone.setText(mOrganization.getPhone());
 
         mOrgType = mOrganization.getOrgType();

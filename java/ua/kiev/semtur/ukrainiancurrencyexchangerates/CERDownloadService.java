@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -29,10 +29,9 @@ public class CERDownloadService extends IntentService {
     static final String PERM_CASH_EXCHANGE_RATES = "ua.kiev.semtur.ukrainiancurrencyexchangerates.CASH_EXCHANGE_RATES";
     static final String EXTRA_IS_DATA_DOWNLOADED = "ua.kiev.semtur.ukrainiancurrencyexchangerates.IS_DATA_DOWNLOADED";
 
-    private static final String TAG = "CERDownloadService";
     private static final String sFinanceUaUa = "http://resources.finance.ua/ua/public/currency-cash.json";
     private static final String sFinanceUaRu = "http://resources.finance.ua/ru/public/currency-cash.json";
-    private static final String sNBUExchangeRates = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json";
+    private static final String sNBUExchangeRates = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?date=";
 
     // Поля для відображення повідомленнь на екрані гаджета
     private Handler mHandlerPostMessage;
@@ -47,7 +46,7 @@ public class CERDownloadService extends IntentService {
     private CERData mCERData;
 
     public CERDownloadService() {
-        super(TAG);
+        super("ua.kiev.semtur.ukrainiancurrencyexchangerates.downloadservice");
     }
 
     public static Intent newIntent(Context context) {
@@ -71,7 +70,9 @@ public class CERDownloadService extends IntentService {
             return;
         }
         try {
-            byte[] data = getCurrencyExchangeRatesData(sNBUExchangeRates);
+            SimpleDateFormat sdf  = new SimpleDateFormat("yyyyMMdd");
+            String date = sdf.format(java.lang.System.currentTimeMillis());
+            byte[] data = getCurrencyExchangeRatesData(sNBUExchangeRates + date + "&json");
             String jsonString = new String(data);
             parseJsonNBU(jsonString);
             String appLang = Locale.getDefault().getLanguage();
@@ -125,17 +126,20 @@ public class CERDownloadService extends IntentService {
         nbu.setAddress(getString(R.string.nbu_address));
         nbu.setPhone(getString(R.string.nbu_phone));
         nbu.setLink("https://bank.gov.ua/control/uk/curmetal/detail/currency?period=daily");
-
         JSONArray jsonArray = new JSONArray(jsonString);
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             String currencyCode = jsonObject.getString("cc");
-            if (currencyCode.equals(CurrencyCode.sUSD) || currencyCode.equals(CurrencyCode.sEUR) ||
-                    currencyCode.equals(CurrencyCode.sGBP) || currencyCode.equals(CurrencyCode.sPLN) ||
-                    currencyCode.equals(CurrencyCode.sRUB)) {
-                double rate = jsonObject.getDouble("rate");
-                Currency currency = new Currency(currencyCode, rate, rate);
-                nbu.addCurrency(currency);
+            switch (currencyCode) {
+                case CurrencyCode.sUSD:
+                case CurrencyCode.sEUR:
+                case CurrencyCode.sGBP:
+                case CurrencyCode.sPLN:
+                case CurrencyCode.sRUB:
+                    double rate = jsonObject.getDouble("rate");
+                    Currency currency = new Currency(currencyCode, rate, rate);
+                    nbu.addCurrency(currency);
+                    break;
             }
         }
         mCERData.addOrganization("nbu", nbu);
@@ -145,7 +149,6 @@ public class CERDownloadService extends IntentService {
         JSONObject jsonObject = new JSONObject(jsonString);
         mCERData.setDate(jsonObject.getString("date"));
         JSONArray jsonArrayOrgs = jsonObject.getJSONArray("organizations");
-        Log.i(TAG, "" + jsonArrayOrgs.length());
         for (int i = 0; i < jsonArrayOrgs.length(); i++) {
             JSONObject jsonObjectOrg = jsonArrayOrgs.getJSONObject(i);
 
@@ -182,8 +185,6 @@ public class CERDownloadService extends IntentService {
     private Currency getCurrencyFromJson(JSONObject jsonObject, String currencyCode) throws JSONException {
         if (jsonObject.has(currencyCode)) {
             JSONObject jsonCurrency = jsonObject.getJSONObject(currencyCode);
-            Log.i(TAG, jsonObject.toString());
-            Log.i(TAG, jsonCurrency.toString());
             double buy = jsonCurrency.getDouble("ask");
             double sale = jsonCurrency.getDouble("bid");
             return new Currency(currencyCode, buy, sale);

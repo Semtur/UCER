@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             mIsCERDataDownloaded = intent.getBooleanExtra(CERDownloadService.EXTRA_IS_DATA_DOWNLOADED, false);
+            mIsCERDownloadStarted = false;
             Fragment fragment;
             if (mIsCERDataDownloaded) {
                 if (mActivityMode != null && mActivityMode.equals(sActivityCalcMode)) {
@@ -75,20 +76,18 @@ public class MainActivity extends AppCompatActivity {
 
         AdLoader.loadAd(this, R.id.adView_activity_cer);
 
-        if (mActivityMode == null) {
+        if (!mIsCERDataDownloaded) {
+            updateCERData();
+        } else if (mActivityMode == null) {
             HelpDialogFragment.checkFirstAppStart(this);
             getSupportActionBar().setSubtitle(CERData.getInstance().getDate());
-            if (!mIsCERDownloadStarted && !mIsCERDataDownloaded) {
-                updateCERData();
-            } else {
-                showFragment();
-            }
+            showFragment(CERFragment.class);
             RateAppDialogFragment.showRateAppDialog(this);
         } else if (mActivityMode.equals(sActivityCalcMode)) {
             setTitle(R.string.currency_calc);
-            showFragment();
+            showFragment(CalcFragment.class);
         } else if (mActivityMode.equals(sActivityOrgInfoMode)) {
-            showFragment();
+            showFragment(OrgInfoFragment.class);
         }
     }
 
@@ -221,43 +220,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void updateCERData() {
+        if (mIsCERDownloadStarted) {
+            return;
+        }
         Intent intent = CERDownloadService.newIntent(this);
         startService(intent);
-        Fragment fragment = StartScreenFragment.newInstance(true);
+        mIsCERDownloadStarted = true;
+        mIsCERDataDownloaded = false;
+        showFragment(StartScreenFragment.class);
+    }
+
+    private void showFragment(Class fClass) {
+        Fragment fragment = mFragmentManager.findFragmentById(R.id.fragment_container);
+        if (fragment != null && fClass.equals(fragment.getClass())) {
+            return;
+        }
+        if (fClass.equals(StartScreenFragment.class)) {
+            fragment = StartScreenFragment.newInstance(mIsCERDownloadStarted);
+        }
+        if (fClass.equals(CERFragment.class)) {
+            fragment = new CERFragment();
+        }
+        if (fClass.equals(CalcFragment.class)) {
+            String currencyCode = getIntent().getStringExtra(EXTRA_CURRENCY_CODE);
+            fragment = CalcFragment.newInstance(currencyCode);
+        }
+        if (fClass.equals(OrgInfoFragment.class)) {
+            String orgId = getIntent().getStringExtra(EXTRA_ORG_ID);
+            fragment = OrgInfoFragment.newInstance(orgId);
+        }
         mFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit();
-        mIsCERDownloadStarted = true;
-        mIsCERDataDownloaded = false;
-    }
-
-    private void showFragment() {
-        Fragment fragment = mFragmentManager.findFragmentById(R.id.fragment_container);
-        boolean replaceFragment = false;
-
-        if (mActivityMode == null) {
-            if (fragment == null || !fragment.getClass().equals(CERFragment.class)) {
-                fragment = new CERFragment();
-                replaceFragment = true;
-            }
-        } else if (mActivityMode.equals(sActivityCalcMode)) {
-            String currencyCode = getIntent().getStringExtra(EXTRA_CURRENCY_CODE);
-            if (fragment == null || !fragment.getClass().equals(CalcFragment.class)) {
-                fragment = CalcFragment.newInstance(currencyCode);
-                replaceFragment = true;
-            }
-        } else if (mActivityMode.equals(sActivityOrgInfoMode)) {
-            String orgId = getIntent().getStringExtra(EXTRA_ORG_ID);
-            if (fragment == null || !fragment.getClass().equals(OrgInfoFragment.class)) {
-                fragment = OrgInfoFragment.newInstance(orgId);
-                replaceFragment = true;
-            }
-        }
-
-        if (replaceFragment) {
-            mFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .commit();
-        }
     }
 }

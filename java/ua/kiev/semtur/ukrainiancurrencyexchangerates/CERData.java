@@ -45,7 +45,7 @@ public class CERData {
         for (Organization organization : mOrganizations.values()) {
             for (Currency currency : organization.getCurrencyList()) {
                 if (currency != null && currency.getCode().equals(currencyCode)) {
-                    if(organization.getId().equals("nbu")) {
+                    if (organization.getId().equals("nbu")) {
                         organizations.add(0, organization);
                     } else {
                         organizations.add(organization);
@@ -170,7 +170,7 @@ public class CERData {
     public boolean isMaxBuyValue(double buyValue, String currencyCode) {
         ArrayList<Organization> organizations = getOrganizations(currencyCode);
         for (Organization org : organizations) {
-            if(org.getId().equals("nbu")) {
+            if (org.getId().equals("nbu")) {
                 continue;
             }
             Currency c = org.getCurrency(currencyCode);
@@ -184,7 +184,7 @@ public class CERData {
     public boolean isMinSaleValue(double saleValue, String currencyCode) {
         ArrayList<Organization> organizations = getOrganizations(currencyCode);
         for (Organization org : organizations) {
-            if(org.getId().equals("nbu")) {
+            if (org.getId().equals("nbu")) {
                 continue;
             }
             Currency c = org.getCurrency(currencyCode);
@@ -219,10 +219,10 @@ public class CERData {
         orgOptimal.setName(optimalOrgName);
         orgSummary.setName(summaryOrgName);
         double optimalBuy = orgs.get(1).getCurrency(currencyCode).getBuy();
-        double optimalSale  = orgs.get(1).getCurrency(currencyCode).getSale();
+        double optimalSale = orgs.get(1).getCurrency(currencyCode).getSale();
         double summaryBuy = optimalBuy;
         double summarySale = optimalSale;
-        for (int i = 2; i < orgs.size(); i++){
+        for (int i = 2; i < orgs.size(); i++) {
             Currency c = orgs.get(i).getCurrency(currencyCode);
             double buy = c.getBuy();
             double sale = c.getSale();
