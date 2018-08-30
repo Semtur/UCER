@@ -17,26 +17,27 @@ public class MainActivity extends AppCompatActivity {
     static final String sActivityOrgInfoMode = "main_activity_org_info_mode";
 
     private static final String SAVED_IS_CER_DOWNLOAD_STARTED = "is_cer_download_started";
-    private static final String SAVED_IS_CER_DATA_DOWNLOADED = "is_cer_data_downloaded";
     private static final String EXTRA_ACTIVITY_MODE = "main_activity_mode";
     private static final String EXTRA_CURRENCY_CODE = "currency_code";
     private static final String EXTRA_ORG_ID = "org_id";
 
     private FragmentManager mFragmentManager = getSupportFragmentManager();
     private boolean mIsCERDownloadStarted;
-    private boolean mIsCERDataDownloaded;
+    private boolean mIsCERDataDownloaded = CERData.getInstance().isDataDownloaded();
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             mIsCERDataDownloaded = intent.getBooleanExtra(CERDownloadService.EXTRA_IS_DATA_DOWNLOADED, false);
+            // Здесь и далее сохраняем статус наличия данных для последующих перезапусков MainActivity в различных режимах.
+            // Без данного действия режим "main_activity_org_info_mode" работает некорректно.
+            CERData.getInstance().setDataDownloaded(mIsCERDataDownloaded);
             mIsCERDownloadStarted = false;
             Fragment fragment;
             if (mIsCERDataDownloaded) {
                 if (mActivityMode != null && mActivityMode.equals(sActivityCalcMode)) {
                     fragment = CalcFragment.newInstance(CERPreferences.getCurrencyCode(context));
                 } else {
-                    mIsCERDownloadStarted = false;
                     getSupportActionBar().setSubtitle(CERData.getInstance().getDate());
                     fragment = new CERFragment();
                 }
@@ -65,20 +66,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_currency_exchange_rate);
+        setContentView(R.layout.activity_main);
+
+        AdLoader.loadAd(this, R.id.adView_activity_cer);
+
         mActivityMode = getIntent().getStringExtra(EXTRA_ACTIVITY_MODE);
 
         if (savedInstanceState != null) {
             mIsCERDownloadStarted = savedInstanceState.getBoolean(SAVED_IS_CER_DOWNLOAD_STARTED, false);
-            mIsCERDataDownloaded = savedInstanceState.getBoolean(SAVED_IS_CER_DATA_DOWNLOADED, false);
             mActivityMode = savedInstanceState.getString(EXTRA_ACTIVITY_MODE);
         }
 
-        AdLoader.loadAd(this, R.id.adView_activity_cer);
-
         if (!mIsCERDataDownloaded) {
             updateCERData();
-        } else if (mActivityMode == null) {
+            return;
+        }
+
+        if (mActivityMode == null) {
             HelpDialogFragment.checkFirstAppStart(this);
             getSupportActionBar().setSubtitle(CERData.getInstance().getDate());
             showFragment(CERFragment.class);
@@ -102,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         MenuItem currency = menu.findItem(R.id.menu_item_currency);
-        MenuItem currencyCalc = menu.findItem(R.id.menu_item_currancy_calc);
+        MenuItem currencyCalc = menu.findItem(R.id.menu_item_currency_calc);
         MenuItem dataSort = menu.findItem(R.id.menu_item_data_sort);
         MenuItem updateData = menu.findItem(R.id.menu_item_update_data);
 
@@ -188,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_item_update_data:
                 updateCERData();
                 return true;
-            case R.id.menu_item_currancy_calc:
+            case R.id.menu_item_currency_calc:
                 String currencyCode = ((CERFragment) fragment).getCurrencyCode();
                 startActivity(MainActivity.newIntent(this, MainActivity.sActivityCalcMode, currencyCode, null));
                 return true;
@@ -206,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(SAVED_IS_CER_DOWNLOAD_STARTED, mIsCERDownloadStarted);
-        outState.putBoolean(SAVED_IS_CER_DATA_DOWNLOADED, mIsCERDataDownloaded);
         if (mActivityMode != null) {
             outState.putString(EXTRA_ACTIVITY_MODE, mActivityMode);
         }
@@ -226,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = CERDownloadService.newIntent(this);
         startService(intent);
         mIsCERDownloadStarted = true;
-        mIsCERDataDownloaded = false;
+        CERData.getInstance().setDataDownloaded(false);
         showFragment(StartScreenFragment.class);
     }
 

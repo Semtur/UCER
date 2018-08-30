@@ -14,6 +14,7 @@ public class CERPreferences {
     private static final String PREF_CURRENCY_CODE = "currency_code";
     private static final String PREF_CALC_OPERATION_TYPE = "calc_operation_type";
     private static final String PREF_CALC_CURRENCY_SUM = "calc_currency_sum";
+    private static final String PREF_APP_VERSION = "app_version";
 
     public static boolean isFirstAppStart(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
@@ -84,6 +85,18 @@ public class CERPreferences {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
                 .putInt(PREF_CALC_CURRENCY_SUM, currencySum)
+                .apply();
+    }
+
+    public static String getAppVersion(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(PREF_APP_VERSION, "");
+    }
+
+    public static void setAppVersion(Context context, String s) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putString(PREF_APP_VERSION, s)
                 .apply();
     }
 }

@@ -1,5 +1,6 @@
 package ua.kiev.semtur.ukrainiancurrencyexchangerates;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,12 +18,19 @@ import android.view.View;
  */
 
 public class RateAppDialogFragment extends DialogFragment {
-    static final long sDelayedReminderTime = 1000 * 3600 * 24 * 7; // Delayed reminder time is seven days (in milliseconds)
+    static final long sDelayedReminderTime = 1000 * 3600 * 24 * 5; // Delayed reminder time is seven days (in milliseconds)
 
     public static void showRateAppDialog(AppCompatActivity activity) {
         long reminderDate = CERPreferences.getRateAppReminderDate(activity);
         if (reminderDate == -1) {
-            return;
+            String curAppVer = activity.getString(R.string.app_version);
+            String appVer = CERPreferences.getAppVersion(activity);
+            if (curAppVer.equals(appVer)) {
+                return;
+            } else {
+                reminderDate = System.currentTimeMillis() + RateAppDialogFragment.sDelayedReminderTime;
+                CERPreferences.setRateAppReminderDate(activity, reminderDate);
+            }
         } else if (reminderDate == 0) {
             reminderDate = System.currentTimeMillis() + RateAppDialogFragment.sDelayedReminderTime;
             CERPreferences.setRateAppReminderDate(activity, reminderDate);
@@ -66,6 +74,10 @@ public class RateAppDialogFragment extends DialogFragment {
                     }
                 })
                 .create();
+
+        Activity a = getActivity();
+        CERPreferences.setAppVersion(a, a.getString(R.string.app_version));
+
         return dialog;
     }
 }

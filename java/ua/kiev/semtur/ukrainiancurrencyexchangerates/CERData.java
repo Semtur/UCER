@@ -1,10 +1,5 @@
 package ua.kiev.semtur.ukrainiancurrencyexchangerates;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.content.Context;
-import android.util.DisplayMetrics;
-
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,6 +13,7 @@ public class CERData {
     private ConcurrentHashMap<String, String> mRegions;
     private ConcurrentHashMap<String, String> mCities;
     private String mDate;
+    private boolean mIsDataDownloaded;
 
     private CERData() {
         mOrganizations = new ConcurrentHashMap<>();
@@ -30,6 +26,14 @@ public class CERData {
             sCERData = new CERData();
         }
         return sCERData;
+    }
+
+    public boolean isDataDownloaded() {
+        return mIsDataDownloaded;
+    }
+
+    public void setDataDownloaded(boolean dataDownloaded) {
+        mIsDataDownloaded = dataDownloaded;
     }
 
     public Organization getOrganization(String orgId) {

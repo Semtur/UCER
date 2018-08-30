@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -90,8 +91,19 @@ public class CalcFragment extends Fragment {
                 if (mEditTextCurrencySum.getText().length() == 0) {
                     mButtonCalculate.setVisibility(View.INVISIBLE);
                 } else {
-                    mCurrencySum = Integer.parseInt(mEditTextCurrencySum.getText().toString());
-                    mButtonCalculate.setVisibility(View.VISIBLE);
+                    try {
+                        mCurrencySum = Integer.parseInt(mEditTextCurrencySum.getText().toString());
+                        mButtonCalculate.setVisibility(View.VISIBLE);
+                    } catch (NumberFormatException e) {
+                        int len = mEditTextCurrencySum.length() - 1;
+                        mEditTextCurrencySum.setText(charSequence.subSequence(0, len));
+                        String text = new StringBuilder(getString(R.string.max_number))
+                                .append(" ")
+                                .append(Integer.MAX_VALUE)
+                                .append(" !")
+                                .toString();
+                        Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
